@@ -21,12 +21,12 @@ Multi-Layout: Choose between Vertical sidebars or Horizontal bars via the Layout
 📂 Project Structure
 Plaintext
 Video Game Metadata Widget/
-├── Dashboard.html       # The central control center (UI & Preview)
-├── Logic.js             # Core script handling API calls & Lanyard sync
-└── Layouts/             # Sub-folder containing widget variations
-    ├── Vertical.html    # Tall sidebar layout
-    ├── Horizontal_L.html# Wide layout (Info Left)
-    └── Horizontal_R.html# Wide layout (Info Right)
+├── Dashboard.html       	# The central control center (UI & Preview)
+├── Logic.js             	# Core script handling API calls & Lanyard sync
+└── Layouts/             	# Sub-folder containing widget variations
+    ├── Vertical.html   	# Tall sidebar layout
+    ├── Horizontal_L.html	# Wide layout (Info Left)
+    └── Horizontal_R.html	# Wide layout (Info Right)
 	
 	
 🚀 Quick Start Guide
@@ -49,9 +49,7 @@ Enter your Discord ID and RAWG Key.
 Select your preferred layout from the dropdown.
 
 3. Browser Source Integration
-In the Dashboard, Configuration Tab > click Generate Browser Source.
-
-Click Copy URL.
+In the Dashboard, Configuration Tab > click Generate Browser Source Click Copy URL.
 
 In OBS, Meld Studios and Streamlabs, add a new Browser Source.
 
@@ -59,10 +57,13 @@ Paste the URL as a Browser Source Into your chosen Broadcast Software
 
 Done! The widget will now automatically appear whenever you start a game.
 
+More features will come lookout for an upcoming roadmap 
+
 🛠️ Configuration & Support
 If you need to move to a different machine or clear your keys, use the Purge Cache button in the Dashboard. This will wipe all local data and reset the system to factory defaults.
 
 📜 Credits & License
 Created by BearddOddity
+
 
 This project is built for the streaming community. Please feel free to fork, customize, and improve. If you use this in your stream, a shoutout is always appreciated!
