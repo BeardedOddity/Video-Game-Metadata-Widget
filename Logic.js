@@ -54,4 +54,5 @@ function startT(st) {
     }, 1000);
 }
 
-document.body.addEventListener('dblclick', () => window.location.href = "Dashboard.html");
+
+document.body.addEventListener('dblclick', () => window.location.href = "../Dashboard.html");
