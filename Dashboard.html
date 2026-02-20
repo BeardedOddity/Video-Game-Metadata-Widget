@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Video Game Metadata Widget</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap');
+        
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            font-family: 'Montserrat', sans-serif;
+            background: radial-gradient(circle at top right, #1a1a1a, #050505);
+            color: white; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            overflow: hidden; -webkit-font-smoothing: antialiased;
+        }
+
+        .config-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+            padding: 40px; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 1000px; box-shadow: 0 30px 60px rgba(0,0,0,0.7); z-index: 10;
+        }
+
+        .status-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; }
+        
+        .metallic-title {
+            background: linear-gradient(to bottom, #ffffff 0%, #b0b0b0 50%, #ffffff 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0px 3px 5px rgba(0,0,0,0.5)); font-weight: 900; font-size: 32px;
+        }
+
+        /* PREVIEW AREA */
+        .preview-window {
+            width: 100%; height: 480px; background: rgba(0,0,0,0.6); border-radius: 30px;
+            margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.08);
+            display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative;
+        }
+        
+        #previewIframe { 
+            width: 1200px; height: 800px; border: none; pointer-events: none; 
+            transition: transform 0.1s linear;
+            transform: scale(0.55);
+        }
+
+        .preview-controls {
+            position: absolute; bottom: 15px; width: 90%; 
+            display: flex; align-items: center; justify-content: center;
+            gap: 15px; padding: 10px; border-radius: 50px;
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(5px);
+        }
+        
+        .zoom-slider { 
+            -webkit-appearance: none; width: 250px; height: 4px; 
+            background: rgba(255,255,255,0.2); border-radius: 2px; outline: none; 
+            cursor: pointer;
+        }
+        
+        .zoom-slider::-webkit-slider-thumb { 
+            -webkit-appearance: none; width: 14px; height: 14px; 
+            background: #00ff88; border-radius: 50%; 
+            box-shadow: 0 0 8px rgba(0,255,136,0.6);
+        }
+
+        .tab-nav { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; background: rgba(0,0,0,0.3); padding: 6px; border-radius: 18px; }
+        .tab-btn { padding: 14px 30px; border-radius: 12px; border: none; background: transparent; color: rgba(255,255,255,0.4); cursor: pointer; font-weight: 800; font-size: 14px; transition: 0.3s; text-transform: uppercase; }
+        .tab-btn.active { background: rgba(255,255,255,0.08); color: white; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.5s ease; }
+
+        label { display: block; margin-top: 22px; font-size: 13px; text-transform: uppercase; letter-spacing: 2.5px; color: #FFFFFF; font-weight: 700; }
+        input[type="text"], input[type="password"], select { width: 100%; padding: 18px; margin-top: 10px; background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; color: white; box-sizing: border-box; outline: none; font-size: 15px; font-family: 'Montserrat', sans-serif; }
+        
+        button.action-btn { width: 100%; padding: 20px; margin-top: 20px; background: white; border: none; border-radius: 18px; color: black; font-weight: 900; text-transform: uppercase; cursor: pointer; transition: 0.3s; font-size: 14px; }
+        button.copy-btn { background: #00ff88; color: #000; margin-top: 0; }
+        button.reset-btn { background: transparent; color: rgba(255,50,50,0.6); border: 1px solid rgba(255,50,50,0.2); width: auto; padding: 12px 24px; font-size: 11px; margin-top: 40px; }
+
+        .docs-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px; align-items: start; }
+        .doc-card { background: rgba(255,255,255,0.02); padding: 25px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.05); min-height: 280px; }
+        .doc-card b { color: white; display: block; font-size: 18px; margin-bottom: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #00ff88; padding-bottom: 8px; width: fit-content; }
+        .doc-card p { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.6); margin: 8px 0; }
+        .doc-card code { background: rgba(0,255,136,0.1); color: #00ff88; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 13px; }
+
+        .creator-tag {
+            margin-top: 40px; font-weight: 900; font-size: 14px; letter-spacing: 4px; text-transform: uppercase;
+            background: linear-gradient(to bottom, #ffffff 0%, #999999 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.8)); opacity: 0.9;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="config-card">
+        <div class="status-header">
+            <div class="metallic-title">Video Game Metadata Widget</div>
+            <div class="status-light" style="background: rgba(0,0,0,0.4); padding: 6px 14px; border-radius: 20px; display: flex; align-items: center;">
+                <div id="statusDot" style="width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; background: #ff4b2b;"></div>
+                <span id="statusText" style="text-transform: uppercase; font-weight: 900; font-size: 11px;">Offline</span>
+            </div>
+        </div>
+
+        <div class="preview-window" id="previewContainer">
+            <div id="previewPlaceholder" style="color: rgba(255,255,255,0.15); font-size: 18px; font-weight: 700;">Awaiting System Configuration...</div>
+            <div class="preview-controls">
+                <input type="range" min="0.2" max="1.5" step="0.01" value="0.55" class="zoom-slider" id="zoomSlider" oninput="applyZoom(this.value)">
+                <span id="zoomVal" style="font-size: 10px; font-weight: 900; color: #00ff88; margin-left: 10px; min-width: 35px;">55%</span>
+            </div>
+        </div>
+        
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="openTab('config')">Configuration</button>
+            <button class="tab-btn" onclick="openTab('docs')">Setup Guide</button>
+        </div>
+
+        <div id="config" class="tab-content active">
+            <div style="display: flex; gap: 50px;">
+                <div style="flex: 1.3;">
+                    <label>Widget Layout</label>
+                    <select id="layoutChoice" onchange="updatePreview()">
+                        <option value="layouts/Vertical.html">Vertical</option>
+                        <option value="layouts/Horizontal_Left.html">Horizontal Left</option>
+                        <option value="layouts/Horizontal_Right.html">Horizontal Right</option>
+                    </select>
+                    <label>Discord User ID</label>
+                    <input type="text" id="discordId" oninput="checkPresence()" placeholder="18-digit ID">
+                    <label>RAWG API Key</label>
+                    <input type="password" id="rawgKey" oninput="updatePreview()" placeholder="RAWG Secret Key">
+                </div>
+                <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <button class="action-btn" onclick="generateUrl()" style="margin-top: 48px; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.15);">Generate Browser Source</button>
+                        <div id="urlContainer" style="margin-top: 25px; padding: 20px; background: rgba(0,255,136,0.03); border: 1px dashed rgba(0,255,136,0.2); border-radius: 20px; display: none;">
+                            <span id="generatedUrl" style="font-family: monospace; font-size: 11px; color: #00ff88; word-break: break-all; display: block; margin-bottom: 12px;"></span>
+                            <button class="action-btn copy-btn" id="copyBtn" onclick="copyUrl()">Copy URL</button>
+                        </div>
+                    </div>
+                    <button class="action-btn reset-btn" onclick="resetHub()">Wipe Clean</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="docs" class="tab-content">
+            <div class="docs-grid">
+                <div class="doc-card">
+                    <b>1. DISCORD ID</b>
+                    <p>Enable <b>Developer Mode</b> in Discord Settings > Advanced.</p>
+                    <p>Left-click your profile pic and select <code>Copy User ID</code> Under Switch Accounts.</p>
+                </div>
+                <div class="doc-card">
+                    <b>2. LANYARD LINK</b>
+                    <p>This hub uses Lanyard to bridge Discord to the web.</p>
+                    <p>Join the <a href="https://discord.gg/lanyard" target="_blank" style="color:#00ff88">Lanyard Server</a> to activate the API.</p>
+                </div>
+                <div class="doc-card">
+                    <b>3. RAWG DATA</b>
+                    <p>Generate a free API key at <a href="https://rawg.io/apidocs" target="_blank" style="color:#00ff88">rawg.io/apidocs</a>.</p>
+                    <p>This fetches game years, genres, and art.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="creator-tag">Created by BearddOddity</div>
+
+<script>
+    let socket;
+    window.onload = () => {
+        document.getElementById('discordId').value = localStorage.getItem('beardd_discord') || '';
+        document.getElementById('rawgKey').value = localStorage.getItem('beardd_rawg') || '';
+        if(document.getElementById('discordId').value) checkPresence();
+    };
+
+    function applyZoom(val) {
+        const iframe = document.getElementById('previewIframe');
+        if(iframe) iframe.style.transform = `scale(${val})`;
+        document.getElementById('zoomVal').innerText = Math.round(val * 100) + "%";
+    }
+
+    function openTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+
+    function checkPresence() {
+        const id = document.getElementById('discordId').value;
+        if(id.length < 17) return;
+        if(socket) socket.close();
+        socket = new WebSocket("wss://api.lanyard.rest/socket");
+        socket.onmessage = (ev) => {
+            const d = JSON.parse(ev.data);
+            if(d.op === 1) socket.send(JSON.stringify({op:2, d:{subscribe_to_id:id}}));
+            if(d.t === "PRESENCE_UPDATE" || d.t === "INIT_STATE") {
+                document.getElementById('statusDot').style.background = "#00ff88";
+                document.getElementById('statusDot').style.boxShadow = "0 0 10px #00ff88";
+                document.getElementById('statusText').innerText = "Online";
+                updatePreview();
+            }
+        };
+    }
+
+    function updatePreview() {
+        const id = document.getElementById('discordId').value;
+        const key = document.getElementById('rawgKey').value;
+        const file = document.getElementById('layoutChoice').value;
+        if(id && key) {
+            document.getElementById('previewPlaceholder').style.display = 'none';
+            const url = `${file}?id=${id}&key=${key}`;
+            let iframe = document.getElementById('previewIframe');
+            if(!iframe) {
+                iframe = document.createElement('iframe');
+                iframe.id = 'previewIframe';
+                iframe.style.transform = `scale(${document.getElementById('zoomSlider').value})`;
+                document.getElementById('previewContainer').appendChild(iframe);
+            }
+            iframe.src = url;
+        }
+    }
+
+    function generateUrl() {
+        const id = document.getElementById('discordId').value;
+        const key = document.getElementById('rawgKey').value;
+        const file = document.getElementById('layoutChoice').value; // Contains layouts/
+        if(!id || !key) return alert("Credentials Missing!");
+        localStorage.setItem('beardd_discord', id);
+        localStorage.setItem('beardd_rawg', key);
+        
+        // Dynamic path resolution
+        const fullPath = window.location.href.replace(/[^/]*$/, '') + file;
+        const finalUrl = `${fullPath}?id=${id}&key=${key}`;
+        
+        document.getElementById('generatedUrl').innerText = finalUrl;
+        document.getElementById('urlContainer').style.display = 'block';
+    }
+
+    function copyUrl() {
+        const url = document.getElementById('generatedUrl').innerText;
+        const btn = document.getElementById('copyBtn');
+        navigator.clipboard.writeText(url);
+        btn.innerText = "COPIED!";
+        btn.style.background = "#ffffff";
+        setTimeout(() => { btn.innerText = "Copy URL"; btn.style.background = "#00ff88"; }, 2000);
+    }
+
+    function resetHub() {
+        if(confirm("Factory reset?")) { localStorage.clear(); location.reload(); }
+    }
+</script>
+</body>
+</html>
